@@ -1,6 +1,4 @@
 import re
-import logging
-logging.basicConfig(filename='day5.log', encoding='utf-8', level=logging.DEBUG)
 
 class MapEntry:
     categoryFrom: str
@@ -23,14 +21,18 @@ if seedsMatch == None:
     raise ValueError("Invalid format of seeds list")
 
 seedsInput = list(map(lambda n: int(n), seedsMatch.group(1).split(" ")))
-seeds = []
+
+seedsRanges = []
 for i in range(0, len(seedsInput) - 1, 2):
-    logging.debug(f"Adding seeds {seedsInput[i]} - {seedsInput[i] + seedsInput[i + 1]}")
-    for j in range(seedsInput[i], seedsInput[i] + seedsInput[i + 1]):
-        seeds.append(j)
+    seedsRanges.append((seedsInput[i], seedsInput[i] + seedsInput[i + 1]))
 
+def inRange(n: int):
+    for r in seedsRanges:
+        if n >= r[0] and n < r[1]:
+            return True
+    return False
 
-logging.debug(f"Expanded to {len(seeds)} seeds")
+print(f"Seeds ranges: {seedsRanges}")
 print("=== Finished parsing seeds")
 
 pos = seedsMatch.end()
@@ -49,30 +51,43 @@ while pos + 1 <= len(input):
         newMapEntry.startTo = int(mapEntryMatch.group(1))
         newMapEntry.startFrom = int(mapEntryMatch.group(2))
         newMapEntry.length = int(mapEntryMatch.group(3))
-        logging.debug(newMapEntry)
+        print(newMapEntry)
         mapEntries.append(newMapEntry)
     pos = mapMatch.end()
 
 print("=== Finished parsing maps")
 
-def mapSeedToLocation(s):
-    currentCategory = "seed"
-    t = s
-    while currentCategory != "location":
-        filteredMEs = list(filter(lambda me: me.categoryFrom == currentCategory, mapEntries))
-        nextCategory = filteredMEs[0].categoryTo
 
+
+def reverseMapSeed(location):
+    currentCategory = "location"
+    currentNumber = location
+
+    while currentCategory != "seed":
+        filteredMEs = list(filter(lambda me: me.categoryTo == currentCategory, mapEntries))
+        currentCategory = filteredMEs[0].categoryFrom
         for me in filteredMEs:
-            if s >= me.startFrom and s < me.startFrom + me.length:
-                t = s - me.startFrom + me.startTo
+            if currentNumber >= me.startTo and currentNumber < me.startTo + me.length:
+                currentNumber = currentNumber - me.startTo + me.startFrom
+                break
             # if not found in any map entry, s stays the same
-        print(f"{currentCategory} -> {nextCategory} {s} -> {t}")
-        currentCategory = nextCategory
-        s = t
-    return s
+    print(f"Location, Seed: {location}: {currentNumber}")
+    return currentNumber
 
-locationsMap = map(mapSeedToLocation, seeds)
-locationsList = list(locationsMap)
-print("=== Finished mapping")
+i = 0
 
-print(f"Smallest location: {min(locationsList)}")
+while True:
+    seed = reverseMapSeed(i)
+    if inRange(seed):
+        break
+    i += 10000
+
+j = i - 9999
+
+while j < i:
+    seed = reverseMapSeed(j)
+    if inRange(seed):
+        print(f"Lowest Seed:Location Pair in range found: {seed}:{j}")
+        break
+    j += 1
+    
