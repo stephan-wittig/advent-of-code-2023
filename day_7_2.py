@@ -23,7 +23,6 @@ class Hand:
         mostCommonJ = list(filter(lambda x: x[0] == "J", mostCommon))
         numOfJ = mostCommonJ[0][1] if mostCommonJ else 0
         mostCommon = list(filter(lambda x: x[0] != "J", mostCommon))
-        print(f"{numOfJ} {mostCommon}")
 
         match (mostCommon[0][1] if mostCommon else 0) + numOfJ:
             case 5:
@@ -77,7 +76,7 @@ def cmpHands(h1: Hand, h2: Hand):
 
 hands = map(Hand, lines)
 sortedHands = sorted(hands, key=cmp_to_key(cmpHands))
-print("\n".join(map(str, sortedHands)))
+# print("\n".join(map(str, sortedHands)))
 
 winnings = 0
 for i, hand in enumerate(sortedHands):
