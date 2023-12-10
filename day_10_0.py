@@ -89,6 +89,7 @@ class PipeMap:
         return connectedPositions[1 if positionsAreEqual(connectedPositions[0], currentPos) else 0]
     
     def traverseCompletePipe(self, reverse = False) -> Generator[Position, None, None]:
+        """Crawls through the entire pipe, stopping just before S. Yields the position at every step"""
         previousPos = self.getStart()
         yield previousPos # Yield start as step 0
         possibleCurrentPos = self.getConnectedNeighbours(previousPos)
