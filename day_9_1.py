@@ -16,7 +16,7 @@ def derive(values: List[int]) -> List[List[int]]:
 def interpolate(derivations: List[List[int]]) -> int:
     lastInterpolation = 0
     for i in range(len(derivations) - 1, -1, -1):
-        lastInterpolation += derivations[i][-1]
+        lastInterpolation = derivations[i][0] -lastInterpolation
     return lastInterpolation
 
 
@@ -25,5 +25,5 @@ if __name__ == '__main__':
     with Pool(8) as p:
         lines = p.map(parseLine, input)
         allDerivations = p.map(derive, lines)
-        nextValues = p.map(interpolate, allDerivations)
-    print(f"Result: {sum(nextValues)}")
+        previousValues = p.map(interpolate, allDerivations)
+    print(f"Result: {sum(previousValues)}")
