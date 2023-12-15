@@ -16,8 +16,6 @@ def findAxis(block: list[str]) -> int:
         left = block[i-width:i]
         right = block[i:i+width]
 
-        print(f"{left}\n\n{right}")
-
         if compareWithSmudge(left, right):
             return i
     return 0
@@ -34,7 +32,6 @@ def compareWithSmudge(left: list[str], right: list[str]) -> bool:
             continue
         if smudgeFound:
             return False
-        print(f"Smudge found at {i}")
         smudgeFound = True
     return smudgeFound
 
