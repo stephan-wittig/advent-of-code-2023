@@ -1,3 +1,5 @@
+from functools import cache
+
 def transpose(platform: list[str]) -> list[str]:
     """Transpose the matrix, swapping north to east"""
     return ["".join(t) for t in zip(*platform)]
@@ -24,6 +26,7 @@ def tiltPlatform(platform: list[str]) -> list[str]:
     """Slides all rocks to the beginning of their strings, i.e., left"""
     return [tiltRow(col) for col in platform]
 
+@cache
 def tiltRow(row: str) -> str:
     """Slides rocks to the beginning of the string"""
     newRow = row
@@ -35,25 +38,29 @@ def tiltRow(row: str) -> str:
 
     return newRow
         
-def findNewPos(col: str, oldPos: int) -> int:
+def findNewPos(row: str, oldPos: int) -> int:
     """Find new position of one rock"""
     for i in range(oldPos - 1 , -1, -1):
-        if col[i] != ".":
+        if row[i] != ".":
             return i + 1
     return 0
 
-def countLoad(col: str) -> int:
+def countLoad(platform: list[str]) -> int:
     """Count load on east support beam"""
     load = 0
-    for i, c in enumerate(col):
-        if c == "O":
-            score += len(col) - i
+    for i, row in platform:
+        for j, char in enumerate(row):
+            if char == "O":
+                score += len(row) - i
     return score
 
 platform = open("input/day_14.txt").read().split("\n")
 # Rotate to start strings at north, turning north to east for the following
 platform = rotateAntiClockwise(platform)
 
-for i in range(3):
+cycles = 1000000000
+for i in range(cycles):
+    print(f"Progress: {i/cycles * 100}%")
     platform = spinCycle(platform)
-    print("\n".join(rotate(platform)) + "\n")
+    #print("\n".join(rotate(platform)) + "\n")
+print(f"Load: {countLoad(platform)}")
