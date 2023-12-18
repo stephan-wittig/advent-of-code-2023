@@ -61,6 +61,9 @@ class Map:
                 movement[2],
                 n.streak + 1 if n.direction == movement[2] else 1
             ), cost)
+
+    def size(self) -> tuple[int, int]:
+        return (len(self._map[-1]), len(self._map))
             
 class Graph:
     """Graph for pathfinding algorithm"""
@@ -98,6 +101,8 @@ class Graph:
 
     def getNextToVisit(self) -> Node:
         """Get next node to visit. That is the node with lowest tentative distance"""
+        if len(self.tentativeDistances) ==0:
+            raise ValueError("Ran out of unvisited nodes!")
         key = min(self.tentativeDistances, key=self.tentativeDistances.get)
         return self.nodes[key]
     
@@ -113,11 +118,11 @@ class Graph:
         yield nextNode
 
     def reset(self) -> None:
-        tentativeDistances = {}
-        visited = {}
+        self.tentativeDistances.clear()
+        self.visited.clear()
 
 
 cityMap = Map(open("input/day_17.txt").read(), 3)
 graph = Graph(cityMap)
-for i, n in enumerate(graph.findPath((0, 0), (12, 12))):
-    print(f"{n}, d: {graph.confirmedDistances[str(n)]}, i: {i}")
+for i, n in enumerate(graph.findPath((0, 0), (140, 140))):
+    print(f"{n}, d: {graph.confirmedDistances[str(n)]}, i: {i}", file=open('d17.log', 'a'))
