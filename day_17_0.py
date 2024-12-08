@@ -14,14 +14,13 @@ class Direction(Enum):
 
 class Node:
     """Represents one node in the graph"""
-    def __init__(self, x: int, y: int, direction: Direction, streak: int) -> None:
+    def __init__(self, x: int, y: int, direction: Direction) -> None:
         self.x = x
         self.y = y
         self.direction = direction
-        self.streak = streak
 
     def __str__(self) -> str:
-        return f"({self.x}|{self.y})_{self.direction}:{self.streak}"
+        return f"({self.x}|{self.y}){self.direction}"
     
     def __repr__(self) -> str:
         return self.__str__()
@@ -33,34 +32,40 @@ class Map:
         self.maxStreak = maxStreak
 
     def getChar(self, x: int, y: int) -> str:
+        print(f"Getting {x} {y}")
         if x < 0 or y < 0:
+            print("error")
             raise IndexError("Cannot get map char for negative index")
         return self._map[y][x]
+    
+    def getCost(self, x: int, y: int, direction: Direction, steps: int) -> int:
+        """Get cost of move"""
+        sum = 0
+        for i in range(1, steps + 1):
+            xs = x if direction == Direction.vertical else x + i
+            ys = y if direction == Direction.horizontal else y + i
+            sum += int(self.getChar(xs, ys))
+        return sum
 
     def getNeighbouringNodes(self, n: Node) -> Generator[tuple[Node, int], None, None]:
-        """Gets neighbouring nodes and traversal costs, taking movement into account. Note this will also return the previously visited node"""
+        """Gets neighbouring nodes and traversal costs, taking movement into account"""
 
-        possibleMovements: list[tuple[int, int, Direction]] = [
-            (1, 0, Direction.horizontal),
-            (-1, 0, Direction.horizontal),
-            (0, 1, Direction.vertical),
-            (0, -1, Direction.vertical)
-        ]
-
-        if n.streak >= self.maxStreak:
-            possibleMovements = filter(lambda m: m[2] != n.direction, possibleMovements)
-
-        for movement in possibleMovements:
-            try:
-                cost = int(self.getChar(n.x + movement[0], n.y + movement[1]))
-            except IndexError:
-                continue # n lies at edge. Neighbour in this direction does not exist
-            yield (Node(
-                n.x + movement[0],
-                n.y + movement[1],
-                movement[2],
-                n.streak + 1 if n.direction == movement[2] else 1
-            ), cost)
+        for d in filter(lambda d: d != n.direction, [Direction.horizontal, Direction.vertical]):
+            # Only goes both directions on start field
+            for i in [-3, -2, -1, 1, 2, 3]:
+                print(f"i:{i}")
+                try:
+                    cost = self.getCost(n.x, n.y, d, i)
+                except IndexError:
+                    print("continued")
+                    continue # n lies at edge. Neighbour in this direction does not exist
+                xs = n.x if d == Direction.vertical else n.x + i
+                ys = n.y if d == Direction.horizontal else n.y + i
+                yield (Node(
+                    xs,
+                    ys,
+                    d
+                ), cost)
 
     def size(self) -> tuple[int, int]:
         return (len(self._map[-1]), len(self._map))
@@ -107,7 +112,7 @@ class Graph:
         return self.nodes[key]
     
     def findPath(self, start: tuple[int, int], target: tuple[int, int]) -> Generator[Node, None, None]:
-        startNode = Node(start[0], start[1], Direction.start, 0)
+        startNode = Node(start[0], start[1], Direction.start)
         self.tentativeDistances[str(startNode)] = 0
         nextNode = startNode
         while nextNode.x != target[0] or nextNode.y != target[1]:
@@ -124,5 +129,8 @@ class Graph:
 
 cityMap = Map(open("input/day_17.txt").read(), 3)
 graph = Graph(cityMap)
-for i, n in enumerate(graph.findPath((0, 0), (140, 140))):
-    print(f"{n}, d: {graph.confirmedDistances[str(n)]}, i: {i}", file=open('d17.log', 'a'))
+for n in cityMap.getNeighbouringNodes(Node(0,0, Direction.start)):
+    print(n)
+
+#for i, n in enumerate(graph.findPath((0, 0), (140, 140))):
+    #print(f"{n}, d: {graph.confirmedDistances[str(n)]}, i: {i}", file=open('d17.log', 'a'))
